@@ -11,7 +11,7 @@
     <string name="email">Enter the database you want to connect to here</string>
     <string name="submit_register_post">Register</string>
     <string name="network_error_title">Network Error</string>
-    <string name="network_error_message">No network could be find. Please connect to one.</string>
+    <string name="network_error_message">No network could be found. Please connect to one.</string>
     <string name="network_error_button_text">Ok</string>
     <string name="error_dialog_one">Error</string>
     <string name="error_dialog_one_message">An error has been occured. Please try again.</string>
