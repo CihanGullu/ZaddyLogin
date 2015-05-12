@@ -3,10 +3,9 @@ package com.wachisu.insertapp;
 import android.os.Bundle;
 import android.app.Activity;
 import java.io.IOException;
+import java.util.ArrayList;
 
-import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
-import org.json.JSONStringer;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -14,21 +13,18 @@ import android.widget.EditText;
 import android.widget.Toast;
 import com.squareup.okhttp.Call;
 import com.squareup.okhttp.Callback;
-import com.squareup.okhttp.Headers;
-import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.FormEncodingBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
-
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
 public class UserInserter extends Activity {
 
     private OkHttpClient httpClient = new OkHttpClient();
-    public static final String TAG = UserInserter.class.getSimpleName();
+    private static final String TAG = UserInserter.class.getSimpleName();
 
     private String usernameValue;
     private String passwordValue;
@@ -39,33 +35,28 @@ public class UserInserter extends Activity {
     @InjectView(R.id.databaseEditText)          EditText editDatabase;
     @InjectView(R.id.register_post_submit)      Button   button;
 
+    ArrayList<EditText> editTexts = new ArrayList<>();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.home_layout);
         ButterKnife.inject(this);
 
+        editTexts.add(editUsername);
+        editTexts.add(editPassword);
+        editTexts.add(editDatabase);
+
         button.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                usernameValue = editUsername.getText().toString();
-                passwordValue = editPassword.getText().toString();
-                databaseValue = editDatabase.getText().toString();
-
-                if ( isEmpty(editUsername) == true )
+                if (isEditTextEmpty(editTexts) )
                 {
-                    Toast.makeText(getApplicationContext(), "Username is required.",
+                    Toast.makeText(getApplicationContext(), "Please make sure that every form is filled out.",
                             Toast.LENGTH_LONG).show();
-                } else if ( isEmpty(editPassword) == true )
-                {
-                    Toast.makeText(getApplicationContext(), "Password is required.",
-                            Toast.LENGTH_LONG).show();
-                } else if ( isEmpty(editDatabase) == true )
-                {
-                    Toast.makeText(getApplicationContext(), "Database is required.",
-                            Toast.LENGTH_LONG).show();
-                }else
+                }
+                else
                 {
                     try {
                         runLogin();
@@ -81,28 +72,20 @@ public class UserInserter extends Activity {
         usernameValue = editUsername.getText().toString();
         passwordValue = editPassword.getText().toString();
         databaseValue = editDatabase.getText().toString();
-        String jsonString = null;
 
-        JSONStringer stringer = new JSONStringer();
-
-        stringer.object();
-        stringer.key("Username");
-        stringer.value(usernameValue);
-        stringer.endObject();
-
-        jsonString = stringer.toString();
-
-        RequestBody body = RequestBody.create((MediaType.parse("application/json;charset=utf-8")), jsonString);
+        RequestBody formData = new FormEncodingBuilder()
+                .add("Username", usernameValue)
+                .add("Password", passwordValue)
+                .add("Database", databaseValue)
+                .build();
 
 
         Request.Builder builder = new Request.Builder();
         builder.url("http://10.0.2.2/newnew/login.php");
-        builder.post(body);
+        builder.post(formData);
 
         Request request = builder.build();
-
         Call call = httpClient.newCall(request);
-
         call.enqueue(new Callback(){
             @Override
             public void onResponse(Response response) throws IOException {
@@ -119,9 +102,20 @@ public class UserInserter extends Activity {
     private boolean isEmpty(EditText textCheck) {
         if (textCheck.getText().toString().trim().length() > 0) {
             return false;
-        } else {
+        } else
+        {
             return true;
         }
+    }
+
+    public boolean isEditTextEmpty(ArrayList<EditText> editTexts)
+    {
+        for (int i = 0; i < editTexts.size(); i++) {
+            if (isEmpty(editTexts.get(i))){
+                return true;
+            }
+        }
+        return false;
     }
 
 }
