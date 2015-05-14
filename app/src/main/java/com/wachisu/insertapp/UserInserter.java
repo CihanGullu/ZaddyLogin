@@ -34,10 +34,10 @@ public class UserInserter extends Activity {
     private String databaseValue;
     private DataReturnedHandler returnedData;
 
-    @InjectView(R.id.usernameEditText) EditText editUsername;
-    @InjectView(R.id.passwordEditText) EditText editPassword;
-    @InjectView(R.id.databaseEditText) EditText editDatabase;
-    @InjectView(R.id.register_post_submit) Button button;
+    @InjectView(R.id.email) EditText editUsername;
+    @InjectView(R.id.password) EditText editPassword;
+    @InjectView(R.id.database) EditText editDatabase;
+    @InjectView(R.id.email_sign_in_button) Button button;
 
     ArrayList < EditText > editTexts = new ArrayList < > ();
     @Override
@@ -56,11 +56,11 @@ public class UserInserter extends Activity {
             @Override
                 public void onClick(View v) {
             if (isEditTextEmpty(editTexts)) {
-                Toast.makeText(getApplicationContext(), "Please make sure that every form is filled out.",
+                Toast.makeText(getApplicationContext(), getString(R.string.form_filled_warning),
                         Toast.LENGTH_LONG).show();
             } else {
                 try {
-                    runLogin("http://10.0.2.2/newnew/login.php");
+                    runLogin(getString(R.string.json_url));
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -74,9 +74,9 @@ public class UserInserter extends Activity {
         databaseValue = editDatabase.getText().toString();
         if (isnetworkavaible()) {
             RequestBody formData = new FormEncodingBuilder()
-                    .add("Username", usernameValue)
-                    .add("Password", passwordValue)
-                    .add("Database", databaseValue)
+                    .add(getString(R.string.jsonUsername), usernameValue)
+                    .add(getString(R.string.jsonPassword), passwordValue)
+                    .add(getString(R.string.jsonDatabase), databaseValue)
                     .build();
             Request.Builder builder = new Request.Builder();
             builder.url(url);
@@ -99,12 +99,12 @@ public class UserInserter extends Activity {
                                     public void run() {
                                         if(returnedData.get_isSuccess() == 1)
                                         {
-                                            Toast.makeText(getApplicationContext(), "Logged in succesfully.",
+                                            Toast.makeText(getApplicationContext(), getString(R.string.logged_successfully),
                                                     Toast.LENGTH_LONG).show();
                                         }
                                         else
                                         {
-                                            Toast.makeText(getApplicationContext(), "Either the username and/or password you have supplied are incorrect.",
+                                            Toast.makeText(getApplicationContext(), getString(R.string.logged_faulty),
                                                     Toast.LENGTH_LONG).show();
                                         }
                                     }

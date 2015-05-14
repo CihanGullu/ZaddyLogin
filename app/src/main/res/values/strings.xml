@@ -16,4 +16,20 @@
     <string name="error_dialog_one">Error</string>
     <string name="error_dialog_one_message">An error has been occured. Please try again.</string>
     <string name="error_dialog_one_button_text">Ok</string>
+    <string name="prompt_email">Username</string>
+    <string name="prompt_password">Password</string>
+    <string name="prompt_database">Database</string>
+    <string name="action_sign_in">Login</string>
+    <string name="invalid_email">This email address is invalid</string>
+    <string name="invalid_password">Password is too short</string>
+    <string name="incorrect_password">Password is incorrect</string>
+    <string name="field_required">This field is required</string>
+    <string name="app_title">WACHISU</string>
+    <string name="logged_successfully">Logged in succesfully.</string>
+    <string name="logged_faulty">Either the username and/or password you have supplied are incorrect.</string>
+    <string name="json_url">http://10.0.2.2/newnew/login.php</string>
+    <string name="form_filled_warning">Please make sure that every form is filled out.</string>
+    <string name="jsonUsername">Username</string>
+    <string name="jsonPassword">Password</string>
+    <string name="jsonDatabase">Database</string>
 </resources>
