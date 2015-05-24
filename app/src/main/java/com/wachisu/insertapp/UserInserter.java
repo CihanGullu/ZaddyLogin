@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 import com.squareup.okhttp.Call;
@@ -33,45 +34,61 @@ public class UserInserter extends Activity {
     private String passwordValue;
     private String databaseValue;
     private DataReturnedHandler returnedData;
+    private Boolean saveLogin;
 
-    @InjectView(R.id.email) EditText editUsername;
-    @InjectView(R.id.password) EditText editPassword;
-    @InjectView(R.id.database) EditText editDatabase;
-    @InjectView(R.id.email_sign_in_button) Button button;
+    UserLocalStorage mUserLocalStorage;
+
+    @InjectView(R.id.etEmailAddress)    EditText    etUsername;
+    @InjectView(R.id.etPassword)        EditText    etPassword;
+    @InjectView(R.id.etDatabase)        EditText    etDatabase;
+    @InjectView(R.id.btLogin)           Button      btLogin;
+    @InjectView(R.id.cbRememberMe)      CheckBox    cbRememberMe;
 
     ArrayList < EditText > editTexts = new ArrayList < > ();
+
     @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.home_layout);
+             mUserLocalStorage = new UserLocalStorage(this);
 
-            ButterKnife.inject(this);
+        ButterKnife.inject(this);
 
-            editTexts.add(editUsername);
-            editTexts.add(editPassword);
-            editTexts.add(editDatabase);
+        saveLogin = mUserLocalStorage.userLocalDatabase.getBoolean("saveLogin", false);
 
-            button.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-                public void onClick(View v) {
-            if (isEditTextEmpty(editTexts)) {
-                Toast.makeText(getApplicationContext(), getString(R.string.form_filled_warning),
-                        Toast.LENGTH_LONG).show();
-            } else {
-                try {
-                    runLogin(getString(R.string.json_url));
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
+        if (saveLogin) {
+            etUsername.setText(mUserLocalStorage.userLocalDatabase.getString("usernameValue", ""));
+            etPassword.setText(mUserLocalStorage.userLocalDatabase.getString("passwordValue", ""));
+            etDatabase.setText(mUserLocalStorage.userLocalDatabase.getString("databaseValue", ""));
+            cbRememberMe.setChecked(true);
         }
-        });
+
+            editTexts.add(etUsername);
+            editTexts.add(etPassword);
+            editTexts.add(etDatabase);
+
+            btLogin.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+                    if (isEditTextEmpty(editTexts)) {
+                        Toast.makeText(getApplicationContext(), getString(R.string.form_filled_warning),
+                                Toast.LENGTH_LONG).show();
+                    } else {
+                        try {
+                            runLogin(getString(R.string.json_url));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            });
     }
     public void runLogin(String url) throws JSONException {
-        usernameValue = editUsername.getText().toString();
-        passwordValue = editPassword.getText().toString();
-        databaseValue = editDatabase.getText().toString();
+        usernameValue = etUsername.getText().toString();
+        passwordValue = etPassword.getText().toString();
+        databaseValue = etDatabase.getText().toString();
+
         if (isnetworkavaible()) {
             RequestBody formData = new FormEncodingBuilder()
                     .add(getString(R.string.jsonUsername), usernameValue)
@@ -99,13 +116,19 @@ public class UserInserter extends Activity {
                                     public void run() {
                                         if(returnedData.get_isSuccess() == 1)
                                         {
-                                            Toast.makeText(getApplicationContext(), getString(R.string.logged_successfully),
-                                                    Toast.LENGTH_LONG).show();
+                                            if (cbRememberMe.isChecked()) {
+                                                _("Remember checked so we're storing data");
+                                                mUserLocalStorage.storeUserData(usernameValue, passwordValue, databaseValue);
+                                            } else {
+                                                mUserLocalStorage.clearUserData();
+                                            }
+                                            mUserLocalStorage.setUserLoggedIn(true);
+
+                                           _T(getApplicationContext(), getString(R.string.logged_successfully), Toast.LENGTH_LONG);
                                         }
                                         else
                                         {
-                                            Toast.makeText(getApplicationContext(), getString(R.string.logged_faulty),
-                                                    Toast.LENGTH_LONG).show();
+                                            _T(getApplicationContext(), getString(R.string.logged_faulty), Toast.LENGTH_LONG);
                                         }
                                     }
                                 });
@@ -129,11 +152,7 @@ public class UserInserter extends Activity {
         }
     }
     private boolean isEmpty(EditText textCheck) {
-        if (textCheck.getText().toString().trim().length() > 0) {
-            return false;
-        } else {
-            return true;
-        }
+        return textCheck.getText().toString().trim().length() <= 0;
     }
     public boolean isEditTextEmpty(ArrayList < EditText > editTexts) {
         for (int i = 0; i < editTexts.size(); i++) {
@@ -146,7 +165,7 @@ public class UserInserter extends Activity {
     private DataReturnedHandler getCurrentData(String jsonData) throws JSONException {
         JSONObject currentData = new JSONObject(jsonData);
         DataReturnedHandler currentDataClass = new DataReturnedHandler();
-        currentDataClass.set_isSuccess(currentData.getInt("isSuccess"));
+        currentDataClass.set_isSuccess(currentData.getInt("success"));
         currentDataClass.set_returnedMessage(currentData.getString("message"));
         currentDataClass.set_returnedSessionUsername(currentData.getString("sesUsername"));
         currentDataClass.set_returnedSessionPassword(currentData.getString("sesPassword"));
@@ -176,5 +195,18 @@ public class UserInserter extends Activity {
         dialog.setDialogMessage(getString(R.string.network_error_message));
         dialog.setDialogButtonText(getString(R.string.network_error_button_text));
         dialog.show(getFragmentManager(), "error_dialog_network");
+    }
+
+    /*
+    *  _T(getApplicationContext(), getString(R.string.logged_faulty), Toast.LENGTH_LONG); ********** Example
+    * */
+    private void _T(Context context, CharSequence text, int duration)
+    {
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+    }
+
+    private void _(String s) {
+        Log.d("################ " + "MyApp ", "MainActivity " + "################################# " + s);
     }
 }
