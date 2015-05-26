@@ -8,11 +8,14 @@ import android.os.Bundle;
 
 /**
  * Created by Sochi on 2015/05/06.
- * assas
+ *
+ *
+ * Gebruik de GETTERS en SETTERS om de errorMessage title, message en knopText te setten ... en te getten xD
  */
 
 
-//ashlsk
+
+
 public class AlertDialogFragment extends DialogFragment {
 
     private String _dialogTitle;

@@ -36,7 +36,11 @@ public class UserInserter extends Activity {
     private DataReturnedHandler returnedData;
     private Boolean saveLogin;
 
+    // mUserLocalStorage = UserPreferences class
+
     UserLocalStorage mUserLocalStorage;
+
+    // Views injecten ( Met behulp van ButterKnife ). Google SquareUp ButterKnife voor documentatie.
 
     @InjectView(R.id.etEmailAddress)    EditText    etUsername;
     @InjectView(R.id.etPassword)        EditText    etPassword;
@@ -44,24 +48,32 @@ public class UserInserter extends Activity {
     @InjectView(R.id.btLogin)           Button      btLogin;
     @InjectView(R.id.cbRememberMe)      CheckBox    cbRememberMe;
 
+    // editText array die we doorgeven
+
     ArrayList < EditText > editTexts = new ArrayList < > ();
 
     @Override
         protected void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             setContentView(R.layout.home_layout);
+                // Hier geven we de lokale Context door aan onze functie.
              mUserLocalStorage = new UserLocalStorage(this);
-
+        // Alle views injecten. Zie documentatie als je dit niet begrijpt.
         ButterKnife.inject(this);
 
         saveLogin = mUserLocalStorage.userLocalDatabase.getBoolean("saveLogin", false);
 
         if (saveLogin) {
+
+            // Als de gebruiken ervoor gekozen heeft om zijn/haar data te rememberen, dan vullen we alle editText's met userData.
+
             etUsername.setText(mUserLocalStorage.userLocalDatabase.getString("usernameValue", ""));
             etPassword.setText(mUserLocalStorage.userLocalDatabase.getString("passwordValue", ""));
             etDatabase.setText(mUserLocalStorage.userLocalDatabase.getString("databaseValue", ""));
             cbRememberMe.setChecked(true);
         }
+
+            // Hier voeg je editText's toe aan onze array.
 
             editTexts.add(etUsername);
             editTexts.add(etPassword);
@@ -85,11 +97,16 @@ public class UserInserter extends Activity {
             });
     }
     public void runLogin(String url) throws JSONException {
+
+        // Alle EditText values doorgeven aan een variable.
+
         usernameValue = etUsername.getText().toString();
         passwordValue = etPassword.getText().toString();
         databaseValue = etDatabase.getText().toString();
 
         if (isnetworkavaible()) {
+
+            // We gebruiken MimeCraft om alle data door te sturen naar onze web_request. .add("sessie-naam", data)
             RequestBody formData = new FormEncodingBuilder()
                     .add(getString(R.string.jsonUsername), usernameValue)
                     .add(getString(R.string.jsonPassword), passwordValue)
@@ -104,12 +121,16 @@ public class UserInserter extends Activity {
                 @Override
                     public void onResponse(Response response) throws IOException {
                         String jsonData = response.body().string();
-                        Log.v(TAG, jsonData);
+
+                    // Alle JSON data uitprinten.
+                        _(jsonData);
 
                         if(response.isSuccessful())
                         {
                             try {
                                 returnedData = getCurrentData(jsonData);
+
+                                // Alles op een UI thread runnen.
 
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -118,10 +139,17 @@ public class UserInserter extends Activity {
                                         {
                                             if (cbRememberMe.isChecked()) {
                                                 _("Remember checked so we're storing data");
+
+                                                // cbRememberMe checked? storeUserData(value1, value2, value3)
+
                                                 mUserLocalStorage.storeUserData(usernameValue, passwordValue, databaseValue);
                                             } else {
+
+                                                // Data clearen.
+
                                                 mUserLocalStorage.clearUserData();
                                             }
+                                            // UserLogged TRUE
                                             mUserLocalStorage.setUserLoggedIn(true);
 
                                            _T(getApplicationContext(), getString(R.string.logged_successfully), Toast.LENGTH_LONG);
@@ -151,9 +179,15 @@ public class UserInserter extends Activity {
             errorNoNetworkAlert();
         }
     }
+
+    // Zie volgende comment.
+
     private boolean isEmpty(EditText textCheck) {
         return textCheck.getText().toString().trim().length() <= 0;
     }
+
+    // Hier gebruiken we de isEmpty functie ^^ om te kijken of elke veld ( die IN de array zit ) leeg is of niet.
+
     public boolean isEditTextEmpty(ArrayList < EditText > editTexts) {
         for (int i = 0; i < editTexts.size(); i++) {
             if (isEmpty(editTexts.get(i))) {
@@ -162,6 +196,9 @@ public class UserInserter extends Activity {
         }
         return false;
     }
+
+    // Hier gebruiken we onze getters en setters om onze JSON data te verwelkomen.
+
     private DataReturnedHandler getCurrentData(String jsonData) throws JSONException {
         JSONObject currentData = new JSONObject(jsonData);
         DataReturnedHandler currentDataClass = new DataReturnedHandler();
@@ -172,6 +209,9 @@ public class UserInserter extends Activity {
         currentDataClass.set_returnedSessionDatabase(currentData.getString("sesDB"));
         return currentDataClass;
     }
+
+    // Kijken of gebruiker verbonden is met een netwerk ( wifi ). Zo niet, laat een error message zien.
+
     private boolean isnetworkavaible() {
         ConnectivityManager manager = (ConnectivityManager)
                 getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -182,6 +222,9 @@ public class UserInserter extends Activity {
         }
         return isAvaible;
     }
+
+    // Hier gebruiken we de AlertDialogFragment class om een alert aan te maken.
+
     private void errorAlert() {
         AlertDialogFragment dialog = new AlertDialogFragment();
         dialog.setDialogTitle(getString(R.string.error_dialog_one));
@@ -189,6 +232,9 @@ public class UserInserter extends Activity {
         dialog.setDialogButtonText(getString(R.string.error_dialog_one_button_text));
         dialog.show(getFragmentManager(), "error_dialog");
     }
+
+    // Hier gebruiken we de AlertDialogFragment class om een alert aan te maken.
+
     private void errorNoNetworkAlert() {
         AlertDialogFragment dialog = new AlertDialogFragment();
         dialog.setDialogTitle(getString(R.string.network_error_title));
@@ -197,14 +243,21 @@ public class UserInserter extends Activity {
         dialog.show(getFragmentManager(), "error_dialog_network");
     }
 
-    /*
-    *  _T(getApplicationContext(), getString(R.string.logged_faulty), Toast.LENGTH_LONG); ********** Example
+
+    /*                      _T(1, 2, 3); ********** Example
+    *
+    *  1 -- Geef de context door ( lokale context )
+    *  2 -- Geef de message door ( kan ook een string resource zijn )
+    *  3 -- Geef een toast length door ( Toast.LENGTH_SHORT/LONG )
     * */
-    private void _T(Context context, CharSequence text, int duration)
+
+     private void _T(Context context, CharSequence text, int duration)
     {
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
     }
+
+    // String s = message die je wilt loggen. ( E.G, " Hier begint de ... activity/function "
 
     private void _(String s) {
         Log.d("################ " + "MyApp ", "MainActivity " + "################################# " + s);
