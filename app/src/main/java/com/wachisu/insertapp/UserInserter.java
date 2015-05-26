@@ -153,6 +153,14 @@ public class UserInserter extends Activity {
                                             mUserLocalStorage.setUserLoggedIn(true);
 
                                            _T(getApplicationContext(), getString(R.string.logged_successfully), Toast.LENGTH_LONG);
+
+                                            /*
+                                            *
+                                            *
+                                            *       Nieuwe activity hier aanroepen. mbv ( intent)
+                                            *
+                                            *
+                                            * */
                                         }
                                         else
                                         {
